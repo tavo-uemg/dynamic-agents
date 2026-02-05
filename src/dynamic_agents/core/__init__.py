@@ -11,6 +11,8 @@ from .exceptions import (
 from .execution import AgentRunOutput, ExecutionEngine, RunnableAgent
 from .factory import AgentFactory
 from .repository import AgentRepository
+from .team_factory import TeamFactory
+from .team_repository import TeamRepository
 from .serialization import config_to_model_data, model_to_config
 from .tool_registry import BUILTIN_TOOLKITS, ToolRegistry
 
@@ -27,6 +29,8 @@ __all__ = [
     "MCPConnectionError",
     "RoutingRule",
     "RunnableAgent",
+    "TeamFactory",
+    "TeamRepository",
     "ToolRegistry",
     "ToolRegistryError",
     "config_to_model_data",
