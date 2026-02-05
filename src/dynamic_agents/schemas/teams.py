@@ -18,7 +18,7 @@ class TeamConfigBase(ORMModel):
     name: str
     description: str | None = None
     status: TeamStatus = TeamStatus.DRAFT
-    model_config: ModelConfig
+    llm_config: ModelConfig = Field(alias="model_config")
     member_ids: list[str] = Field(default_factory=list)
     instructions: list[str] = Field(default_factory=list)
 
@@ -52,7 +52,7 @@ class TeamUpdate(ORMModel):
     name: str | None = None
     description: str | None = None
     status: TeamStatus | None = None
-    model_config: ModelConfig | None = None
+    llm_config: ModelConfig | None = Field(default=None, alias="model_config")
     member_ids: list[str] | None = None
     instructions: list[str] | None = None
     respond_directly: bool | None = None

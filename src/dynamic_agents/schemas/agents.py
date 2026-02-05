@@ -63,8 +63,8 @@ class AgentConfigBase(ORMModel):
     version: int = 1
     status: AgentStatus = AgentStatus.DRAFT
 
-    model_config: ModelConfig
-    reasoning_model_config: ModelConfig | None = None
+    llm_config: ModelConfig = Field(alias="model_config")
+    reasoning_llm_config: ModelConfig | None = Field(default=None, alias="reasoning_model_config")
 
     system_message: str | None = None
     instructions: list[str] = Field(default_factory=list)
@@ -106,8 +106,8 @@ class AgentUpdate(ORMModel):
     description: str | None = None
     version: int | None = None
     status: AgentStatus | None = None
-    model_config: ModelConfig | None = None
-    reasoning_model_config: ModelConfig | None = None
+    llm_config: ModelConfig | None = Field(default=None, alias="model_config")
+    reasoning_llm_config: ModelConfig | None = Field(default=None, alias="reasoning_model_config")
     system_message: str | None = None
     instructions: list[str] | None = None
     expected_output: str | None = None

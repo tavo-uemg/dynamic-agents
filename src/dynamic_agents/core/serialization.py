@@ -123,7 +123,7 @@ def config_to_model_data(config: AgentCreate) -> dict[str, Any]:
             "show_tool_calls": config.show_tool_calls,
             "read_chat_history": config.read_chat_history,
             "read_tool_call_history": config.read_tool_call_history,
-            "model_config": config.model_config.model_dump(mode="json"),
+            "model_config": config.llm_config.model_dump(mode="json"),
             "reasoning_model_config": None,
             "knowledge_config": None,
             "output_schema": output.output_schema,
@@ -140,8 +140,8 @@ def config_to_model_data(config: AgentCreate) -> dict[str, Any]:
             "user_id": config.user_id,
         }
 
-        if config.reasoning_model_config:
-            data["reasoning_model_config"] = config.reasoning_model_config.model_dump(mode="json")
+        if config.reasoning_llm_config:
+            data["reasoning_model_config"] = config.reasoning_llm_config.model_dump(mode="json")
 
         if config.knowledge_config:
             data["knowledge_config"] = config.knowledge_config.model_dump(mode="json")

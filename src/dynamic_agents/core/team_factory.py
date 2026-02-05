@@ -54,7 +54,7 @@ class TeamFactory:
         """Create an Agno Team instance from stored configuration."""
 
         team_cls = self._require_team_class()
-        model_instance = await self._resolve_model(config.model_config)
+        model_instance = await self._resolve_model(config.llm_config)
         members = await self._resolve_members(config.member_ids)
         team_kwargs = self._build_team_kwargs(config, model_instance, members)
 

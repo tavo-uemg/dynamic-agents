@@ -104,8 +104,8 @@ class TeamRepository:
 
                 self._apply_simple_updates(model, team_update)
 
-                if team_update.model_config is not None:
-                    model.model_config = team_update.model_config.model_dump(mode="json")
+                if team_update.llm_config is not None:
+                    model.model_config = team_update.llm_config.model_dump(mode="json")
                 if team_update.member_ids is not None:
                     model.member_ids = list(team_update.member_ids)
                 if team_update.instructions is not None:

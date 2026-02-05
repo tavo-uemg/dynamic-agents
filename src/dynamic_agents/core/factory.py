@@ -52,7 +52,7 @@ class AgentFactory:
         """Create an Agno Agent instance from stored configuration."""
 
         agent_cls = self._require_agent_class()
-        model_instance = await self._resolve_model(config.model_config)
+        model_instance = await self._resolve_model(config.llm_config)
         tools = await self._resolve_tools(config)
         output_schema = self._resolve_output_schema(config.output.output_schema)
         agent_kwargs = self._build_agent_kwargs(config, model_instance, tools, output_schema)
@@ -174,8 +174,8 @@ class AgentFactory:
         agent.use_json_mode = output.use_json_mode
         agent.output_schema_name = output.output_schema
 
-        if config.reasoning_model_config is not None:
-            agent.reasoning_model_config = config.reasoning_model_config.model_dump(mode="json")
+        if config.reasoning_llm_config is not None:
+            agent.reasoning_model_config = config.reasoning_llm_config.model_dump(mode="json")
         if config.knowledge_config is not None:
             agent.knowledge_config = config.knowledge_config.model_dump(mode="json")
 

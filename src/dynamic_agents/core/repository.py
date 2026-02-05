@@ -101,10 +101,10 @@ class AgentRepository:
 
                 self._apply_simple_updates(model, agent_update)
 
-                if agent_update.model_config is not None:
-                    model.model_config = agent_update.model_config.model_dump(mode="json")
-                if agent_update.reasoning_model_config is not None:
-                    model.reasoning_model_config = agent_update.reasoning_model_config.model_dump(
+                if agent_update.llm_config is not None:
+                    model.model_config = agent_update.llm_config.model_dump(mode="json")
+                if agent_update.reasoning_llm_config is not None:
+                    model.reasoning_model_config = agent_update.reasoning_llm_config.model_dump(
                         mode="json"
                     )
                 if agent_update.memory is not None:
