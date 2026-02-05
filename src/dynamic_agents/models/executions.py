@@ -108,10 +108,10 @@ class ExecutionRecord(UUIDPrimaryKey, TimestampMixin, UserOwnedMixin, Base):
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
-    agent: Mapped["AgentModel" | None] = relationship(back_populates="executions")
-    team: Mapped["TeamModel" | None] = relationship(back_populates="executions")
-    workflow: Mapped["WorkflowModel" | None] = relationship(back_populates="executions")
-    router_config: Mapped["RouterConfigModel" | None] = relationship(back_populates="executions")
+    agent: Mapped["AgentModel | None"] = relationship(back_populates="executions")
+    team: Mapped["TeamModel | None"] = relationship(back_populates="executions")
+    workflow: Mapped["WorkflowModel | None"] = relationship(back_populates="executions")
+    router_config: Mapped["RouterConfigModel | None"] = relationship(back_populates="executions")
 
 
 __all__ = [
