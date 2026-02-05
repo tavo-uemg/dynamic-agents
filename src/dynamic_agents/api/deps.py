@@ -15,6 +15,7 @@ from ..core.repository import AgentRepository
 from ..core.team_repository import TeamRepository
 from ..core.team_factory import TeamFactory
 from ..core.tool_registry import ToolRegistry
+from ..core.knowledge import KnowledgeManager, KnowledgeManagerError
 from ..core.workflow_factory import WorkflowFactory
 from ..core.workflow_repository import WorkflowRepository
 from ..router.config import RouterConfig as RouterSettings
@@ -35,6 +36,7 @@ _router_manager: RouterManager | None = None
 _secrets_manager: SecretsManager | None = None
 _secrets_manager_failed: bool = False
 _tool_registry = ToolRegistry()
+_knowledge_manager: KnowledgeManager | None = None
 
 
 async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
@@ -87,6 +89,19 @@ def get_router_manager() -> RouterManager:
             secrets_manager=get_secrets_manager(),
         )
     return _router_manager
+
+
+def get_knowledge_manager() -> KnowledgeManager:
+    """Provide a singleton KnowledgeManager instance."""
+
+    global _knowledge_manager
+    if _knowledge_manager is None:
+        try:
+            _knowledge_manager = KnowledgeManager()
+        except KnowledgeManagerError as exc:
+            logger.error("Knowledge manager initialization failed: %s", exc)
+            raise
+    return _knowledge_manager
 
 
 async def get_agent_factory(repo: AgentRepository = Depends(get_agent_repository)) -> AgentFactory:
@@ -148,6 +163,7 @@ TeamFactoryDep = Annotated[TeamFactory, Depends(get_team_factory)]
 WorkflowFactoryDep = Annotated[WorkflowFactory, Depends(get_workflow_factory)]
 ExecutionEngineDep = Annotated[ExecutionEngine, Depends(get_execution_engine)]
 RouterManagerDep = Annotated[RouterManager, Depends(get_router_manager)]
+KnowledgeManagerDep = Annotated[KnowledgeManager, Depends(get_knowledge_manager)]
 
 
 __all__ = [
@@ -170,4 +186,6 @@ __all__ = [
     "get_team_repository",
     "get_workflow_factory",
     "get_workflow_repository",
+    "KnowledgeManagerDep",
+    "get_knowledge_manager",
 ]

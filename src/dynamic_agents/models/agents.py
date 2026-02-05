@@ -77,6 +77,7 @@ class AgentModel(UUIDPrimaryKey, TimestampMixin, UserOwnedMixin, Base):
     knowledge_config: Mapped[dict[str, Any] | None] = mapped_column(JSONBType)
 
     tools: Mapped[list[dict[str, Any]]] = mapped_column(JSONBType, default=list, nullable=False)
+    skills: Mapped[list[dict[str, Any]]] = mapped_column(JSONBType, default=list, nullable=False)
     mcp_servers: Mapped[list[dict[str, Any]]] = mapped_column(
         JSONBType, default=list, nullable=False
     )

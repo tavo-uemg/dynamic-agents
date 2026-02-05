@@ -319,7 +319,8 @@ class RouterManager:
         self, config: RouterConfig, resolved_model_list: list[dict[str, Any]] | None = None
     ) -> Router:
         model_payload = resolved_model_list or await self._resolve_model_list(config.model_list)
-        kwargs = self._router_kwargs(config, model_payload)
+        guardrails_payload = await self._resolve_guardrails(config.guardrails)
+        kwargs = self._router_kwargs(config, model_payload, guardrails_payload)
         router = await asyncio.to_thread(Router, **kwargs)
         self._last_reload_at = datetime.now(timezone.utc)
         return router
@@ -330,6 +331,20 @@ class RouterManager:
         resolved: list[dict[str, Any]] = []
         for deployment in deployments:
             payload = deployment.model_dump()
+            params = dict(payload["litellm_params"])
+            for key, value in list(params.items()):
+                if isinstance(value, str) and value.startswith(ENV_REFERENCE_PREFIX):
+                    resolved_value = await self._resolve_secret_value(value)
+                    if resolved_value is not None:
+                        params[key] = resolved_value
+            payload["litellm_params"] = params
+            resolved.append(payload)
+        return resolved
+
+    async def _resolve_guardrails(self, guardrails: Sequence[Any]) -> list[dict[str, Any]]:
+        resolved: list[dict[str, Any]] = []
+        for gr in guardrails:
+            payload = gr.model_dump()
             params = dict(payload["litellm_params"])
             for key, value in list(params.items()):
                 if isinstance(value, str) and value.startswith(ENV_REFERENCE_PREFIX):
@@ -356,7 +371,10 @@ class RouterManager:
         return os.getenv(env_name)
 
     def _router_kwargs(
-        self, config: RouterConfig, model_list: list[dict[str, Any]]
+        self,
+        config: RouterConfig,
+        model_list: list[dict[str, Any]],
+        guardrails: list[dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
         kwargs: dict[str, Any] = {
             "model_list": model_list,
@@ -369,6 +387,8 @@ class RouterManager:
             "enable_pre_call_checks": config.enable_pre_call_checks,
             "enable_tag_filtering": config.enable_tag_filtering,
         }
+        if guardrails:
+            kwargs["guardrails"] = guardrails
         if config.redis_url:
             kwargs["redis_url"] = config.redis_url
         else:
@@ -417,6 +437,7 @@ class RouterManager:
             "redis_port",
             "redis_password",
             "redis_url",
+            "guardrails",
         ]
         return any(
             getattr(current, field) != getattr(new_config, field) for field in sensitive_fields

@@ -54,8 +54,11 @@ class AgentFactory:
         agent_cls = self._require_agent_class()
         model_instance = await self._resolve_model(config.llm_config)
         tools = await self._resolve_tools(config)
+        skills = self._resolve_skills(config)
         output_schema = self._resolve_output_schema(config.output.output_schema)
-        agent_kwargs = self._build_agent_kwargs(config, model_instance, tools, output_schema)
+        agent_kwargs = self._build_agent_kwargs(
+            config, model_instance, tools, skills, output_schema
+        )
 
         try:
             agent = agent_cls(**agent_kwargs)
@@ -77,6 +80,22 @@ class AgentFactory:
 
         self._attach_identifiers(agent, agent_id, model.user_id)
         return agent
+
+    def _resolve_skills(self, config: AgentConfig) -> Any | None:
+        if not config.skills:
+            return None
+        try:
+            from agno.skills import LocalSkills, Skills  # type: ignore
+        except ImportError:
+            self._logger.warning("agno.skills not found")
+            return None
+
+        loaders = []
+        for skill_cfg in config.skills:
+            if skill_cfg.type == "local" and skill_cfg.path:
+                loaders.append(LocalSkills(skill_cfg.path))
+
+        return Skills(loaders=loaders) if loaders else None
 
     async def _resolve_tools(self, config: AgentConfig) -> list[Any]:
         tool_configs: list[ToolConfig] = [tool.model_copy(deep=True) for tool in config.tools]
@@ -128,6 +147,7 @@ class AgentFactory:
         config: AgentConfig,
         model_instance: Any,
         tools: Sequence[Any],
+        skills: Any | None,
         output_schema: type[BaseModel] | None,
     ) -> dict[str, Any]:
         kwargs: dict[str, Any] = {
@@ -144,6 +164,12 @@ class AgentFactory:
             "reasoning_max_steps": config.reasoning.max_steps,
             "structured_outputs": config.output.structured_outputs,
         }
+        if skills:
+            kwargs["skills"] = skills
+        if config.knowledge_config:
+            kwargs["search_knowledge"] = config.knowledge_config.search_knowledge
+            kwargs["add_knowledge_to_context"] = config.knowledge_config.add_knowledge_to_context
+
         if output_schema is not None:
             kwargs["output_schema"] = output_schema
         if config.user_id is not None:

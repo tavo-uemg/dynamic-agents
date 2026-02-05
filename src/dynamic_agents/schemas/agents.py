@@ -13,6 +13,15 @@ from .router import ModelConfig
 from .tools import MCPServerConfig, ToolConfig
 
 
+class SkillConfig(ORMModel):
+    """Configuration for loading skills."""
+
+    type: str = "local"  # e.g., "local", "github" (future)
+    path: str | None = None
+    name: str | None = None
+    loader_params: dict[str, Any] = Field(default_factory=dict)
+
+
 class MemorySettings(ORMModel):
     """Fine-grained control over history and memory behaviour."""
 
@@ -51,6 +60,7 @@ class KnowledgeConfig(ORMModel):
     vector_store: str | None = None
     collection: str | None = None
     search_knowledge: bool = False
+    add_knowledge_to_context: bool = True
     filters: dict[str, Any] = Field(default_factory=dict)
     retriever: dict[str, Any] = Field(default_factory=dict)
 
@@ -76,6 +86,7 @@ class AgentConfigBase(ORMModel):
     reasoning: ReasoningSettings = Field(default_factory=ReasoningSettings)
 
     tools: list[ToolConfig] = Field(default_factory=list)
+    skills: list[SkillConfig] = Field(default_factory=list)
     mcp_servers: list[MCPServerConfig] = Field(default_factory=list)
     tool_call_limit: int | None = None
     show_tool_calls: bool = False
@@ -116,6 +127,7 @@ class AgentUpdate(ORMModel):
     output: OutputSettings | None = None
     reasoning: ReasoningSettings | None = None
     tools: list[ToolConfig] | None = None
+    skills: list[SkillConfig] | None = None
     mcp_servers: list[MCPServerConfig] | None = None
     tool_call_limit: int | None = None
     show_tool_calls: bool | None = None
@@ -142,4 +154,5 @@ __all__ = [
     "MemorySettings",
     "OutputSettings",
     "ReasoningSettings",
+    "SkillConfig",
 ]

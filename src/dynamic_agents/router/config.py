@@ -2,29 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Any, ClassVar
-
-
-def _import_attr(module_name: str, attr_name: str) -> Any:
-    import importlib
-
-    try:
-        module = importlib.import_module(module_name)
-    except ImportError as exc:  # pragma: no cover - dependency validation
-        raise ImportError(
-            f"Module '{module_name}' is required to configure the LiteLLM router"
-        ) from exc
-    try:
-        return getattr(module, attr_name)
-    except AttributeError as exc:  # pragma: no cover - dependency validation
-        raise ImportError(
-            f"Attribute '{attr_name}' was not found in '{module_name}'. Upgrade your dependencies."
-        ) from exc
-
-
-BaseSettings = _import_attr("pydantic_settings", "BaseSettings")
-ConfigDict = _import_attr("pydantic", "ConfigDict")
-Field = _import_attr("pydantic", "Field")
+from pydantic import Field
+from pydantic_settings import BaseSettings
 
 from .schemas import ModelDeployment
 
@@ -48,9 +27,12 @@ class RouterConfig(BaseSettings):
     redis_password: str | None = None
     redis_url: str | None = None
 
-    model_config: ClassVar[dict[str, str]] = ConfigDict(  # pyright: ignore[reportIncompatibleVariableOverride]
-        env_prefix="LITELLM_",
-        env_nested_delimiter="__",
+    model_config = BaseSettings.model_config.copy()
+    model_config.update(
+        {
+            "env_prefix": "LITELLM_",
+            "env_nested_delimiter": "__",
+        }
     )
 
 

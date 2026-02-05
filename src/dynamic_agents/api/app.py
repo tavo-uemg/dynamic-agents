@@ -12,6 +12,7 @@ from .routes import (
     agents_router,
     execute_router,
     health_router,
+    knowledge_router,
     router_router,
     teams_router,
     workflows_router,
@@ -44,6 +45,7 @@ def create_app() -> FastAPI:
     app.include_router(teams_router, prefix="/api/v1/teams", tags=["teams"])
     app.include_router(workflows_router, prefix="/api/v1/workflows", tags=["workflows"])
     app.include_router(execute_router, prefix="/api/v1/execute", tags=["execute"])
+    app.include_router(knowledge_router, prefix="/api/v1/knowledge", tags=["knowledge"])
     app.include_router(router_router, prefix="/api/v1/router", tags=["router"])
     app.include_router(health_router, tags=["health"])
 

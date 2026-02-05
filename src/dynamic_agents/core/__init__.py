@@ -10,6 +10,7 @@ from .exceptions import (
 )
 from .execution import AgentRunOutput, ExecutionEngine, RunnableAgent
 from .factory import AgentFactory
+from .knowledge import AgentKnowledge, KnowledgeManager, KnowledgeManagerError
 from .repository import AgentRepository
 from .team_factory import TeamFactory
 from .team_repository import TeamRepository
@@ -30,12 +31,15 @@ __all__ = [
     "AgnoWorkflow",
     "AgentFactory",
     "AgentFactoryError",
+    "AgentKnowledge",
     "AgentNotFoundError",
     "AgentRepository",
     "AgentRepositoryError",
     "AgentRunOutput",
     "EventRouter",
     "ExecutionEngine",
+    "KnowledgeManager",
+    "KnowledgeManagerError",
     "MCPConnectionError",
     "ResolvedWorkflow",
     "ResolvedWorkflowStep",

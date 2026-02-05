@@ -28,10 +28,18 @@ class ModelDeployment(ORMModel):
     model_info: dict[str, Any] | None = None
 
 
+class GuardrailConfig(ORMModel):
+    """Configuration for LiteLLM guardrails."""
+
+    guardrail_name: str
+    litellm_params: dict[str, Any]
+
+
 class RouterConfig(ORMModel):
     """Schema for LiteLLM router configuration payloads."""
 
     model_list: list[ModelDeployment] = Field(default_factory=list)
+    guardrails: list[GuardrailConfig] = Field(default_factory=list)
     routing_strategy: str = "simple-shuffle"
 
     num_retries: int = 3
@@ -52,4 +60,4 @@ class RouterConfig(ORMModel):
     redis_password: str | None = None
 
 
-__all__ = ["ModelConfig", "ModelDeployment", "RouterConfig"]
+__all__ = ["GuardrailConfig", "ModelConfig", "ModelDeployment", "RouterConfig"]
