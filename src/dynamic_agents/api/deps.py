@@ -3,23 +3,33 @@
 from __future__ import annotations
 
 import logging
+import importlib
 from typing import Annotated, AsyncGenerator
 
 from fastapi import Depends
-from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..core.execution import ExecutionEngine
 from ..core.factory import AgentFactory
 from ..core.repository import AgentRepository
 from ..core.team_repository import TeamRepository
+from ..core.team_factory import TeamFactory
 from ..core.tool_registry import ToolRegistry
+from ..core.workflow_factory import WorkflowFactory
+from ..core.workflow_repository import WorkflowRepository
 from ..router.config import RouterConfig as RouterSettings
 from ..router.manager import RouterManager
 from ..secrets.manager import SecretsManager
 from ..storage.database import get_async_session, get_session_factory
 
 logger = logging.getLogger(__name__)
+
+try:  # pragma: no cover - pydantic may be optional at runtime
+    _pydantic_mod = importlib.import_module("pydantic")
+except ImportError:  # pragma: no cover
+    ValidationError = Exception
+else:  # pragma: no cover
+    ValidationError = getattr(_pydantic_mod, "ValidationError", Exception)
 
 _router_manager: RouterManager | None = None
 _secrets_manager: SecretsManager | None = None
@@ -44,6 +54,12 @@ def get_team_repository() -> TeamRepository:
     """Return a TeamRepository bound to the global session factory."""
 
     return TeamRepository(get_session_factory())
+
+
+def get_workflow_repository() -> WorkflowRepository:
+    """Return a WorkflowRepository bound to the global session factory."""
+
+    return WorkflowRepository(get_session_factory())
 
 
 def get_secrets_manager() -> SecretsManager | None:
@@ -85,21 +101,51 @@ async def get_agent_factory(repo: AgentRepository = Depends(get_agent_repository
     return factory
 
 
+async def get_team_factory(
+    agent_factory: AgentFactory = Depends(get_agent_factory),
+    team_repo: TeamRepository = Depends(get_team_repository),
+) -> TeamFactory:
+    """Return a TeamFactory configured with router/agent dependencies."""
+
+    factory = TeamFactory(agent_factory=agent_factory, router_manager=get_router_manager())
+    factory.bind_repository(team_repo)
+    return factory
+
+
+async def get_workflow_factory(
+    agent_factory: AgentFactory = Depends(get_agent_factory),
+    team_factory: TeamFactory = Depends(get_team_factory),
+    workflow_repo: WorkflowRepository = Depends(get_workflow_repository),
+) -> WorkflowFactory:
+    """Return a WorkflowFactory configured with repository dependencies."""
+
+    factory = WorkflowFactory(agent_factory=agent_factory, team_factory=team_factory)
+    factory.bind_repository(workflow_repo)
+    return factory
+
+
 async def get_execution_engine(
     agent_factory: AgentFactory = Depends(get_agent_factory),
+    team_factory: TeamFactory = Depends(get_team_factory),
+    workflow_factory: WorkflowFactory = Depends(get_workflow_factory),
 ) -> ExecutionEngine:
     """Return an ExecutionEngine that can orchestrate agent runs."""
 
     return ExecutionEngine(
         agent_factory=agent_factory,
         session_factory=get_session_factory(),
+        team_factory=team_factory,
+        workflow_factory=workflow_factory,
     )
 
 
 DbSession = Annotated[AsyncSession, Depends(get_db_session)]
 AgentRepo = Annotated[AgentRepository, Depends(get_agent_repository)]
 TeamRepo = Annotated[TeamRepository, Depends(get_team_repository)]
+WorkflowRepo = Annotated[WorkflowRepository, Depends(get_workflow_repository)]
 AgentFactoryDep = Annotated[AgentFactory, Depends(get_agent_factory)]
+TeamFactoryDep = Annotated[TeamFactory, Depends(get_team_factory)]
+WorkflowFactoryDep = Annotated[WorkflowFactory, Depends(get_workflow_factory)]
 ExecutionEngineDep = Annotated[ExecutionEngine, Depends(get_execution_engine)]
 RouterManagerDep = Annotated[RouterManager, Depends(get_router_manager)]
 
@@ -111,11 +157,17 @@ __all__ = [
     "ExecutionEngineDep",
     "RouterManagerDep",
     "TeamRepo",
+    "TeamFactoryDep",
+    "WorkflowFactoryDep",
+    "WorkflowRepo",
     "get_agent_factory",
     "get_agent_repository",
     "get_db_session",
     "get_execution_engine",
     "get_router_manager",
     "get_secrets_manager",
+    "get_team_factory",
     "get_team_repository",
+    "get_workflow_factory",
+    "get_workflow_repository",
 ]

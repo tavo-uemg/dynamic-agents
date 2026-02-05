@@ -47,4 +47,52 @@ async def execute_agent(
     return result
 
 
+@router.post("/team/{team_id}", response_model=ExecutionResult)
+async def execute_team(
+    team_id: UUID,
+    request: ExecuteRequest,
+    engine: ExecutionEngineDep,
+) -> ExecutionResult:
+    """Execute a team and return the persisted execution record."""
+
+    try:
+        result = await engine.run_team(
+            team_id=team_id,
+            input_text=request.input,
+            session_id=request.session_id,
+            metadata=request.metadata,
+            stream=request.stream,
+        )
+    except Exception as exc:  # pragma: no cover - defensive guard
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Team execution failed",
+        ) from exc
+    return result
+
+
+@router.post("/workflow/{workflow_id}", response_model=ExecutionResult)
+async def execute_workflow(
+    workflow_id: UUID,
+    request: ExecuteRequest,
+    engine: ExecutionEngineDep,
+) -> ExecutionResult:
+    """Execute a workflow and return the persisted execution record."""
+
+    try:
+        result = await engine.run_workflow(
+            workflow_id=workflow_id,
+            input_text=request.input,
+            session_id=request.session_id,
+            metadata=request.metadata,
+            stream=request.stream,
+        )
+    except Exception as exc:  # pragma: no cover - defensive guard
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Workflow execution failed",
+        ) from exc
+    return result
+
+
 __all__ = ["router", "ExecuteRequest"]
