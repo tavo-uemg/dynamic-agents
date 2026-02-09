@@ -1,0 +1,17 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/pyright/main/packages/pyright-internal/src/etc/pyright.schema.json",
+  "venvPath": ".",
+  "venv": ".venv",
+  "stubPath": "typings",
+  "extraPaths": [
+    "src",
+    ".venv/lib/python3.12/site-packages"
+  ],
+  "diagnosticSeverityOverrides": {
+    "reportMissingModuleSource": "none",
+    "reportMissingImports": "none",
+    "reportUnknownVariableType": "none",
+    "reportUntypedBaseClass": "none",
+    "reportUnannotatedClassAttribute": "none"
+  }
+}

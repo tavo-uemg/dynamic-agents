@@ -1,1 +1,6 @@
-Generic single-database configuration with an async dbapi.
+This directory contains the Alembic migration environment used by the project.
+
+The configuration has been set up for async SQLAlchemy engines; run commands
+with the usual Alembic CLI (e.g. `alembic revision --autogenerate -m "..."`
+and `alembic upgrade head`). The actual metadata is exposed through
+`dynamic_agents.models`.
